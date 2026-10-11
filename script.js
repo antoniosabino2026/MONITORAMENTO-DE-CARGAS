@@ -44,6 +44,7 @@ async function obterEstadoEsp() {
 
         lampButton.textContent =
             "Ligar lâmpada";
+            lampadaLigada = !lampadaLigada;
         DesligarEsp();
         console.log("Está OFF", estado);
     }
