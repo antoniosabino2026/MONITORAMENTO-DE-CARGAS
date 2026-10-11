@@ -1,0 +1,359 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --background: #151515;
+    --card: #202020;
+    --border: #3a3a3a;
+
+    --text: #f1f1f1;
+    --muted: #b6b6b6;
+
+    --green: #43b85a;
+    --green-light: #dff5e3;
+
+    --button: #252a32;
+}
+
+body {
+    min-height: 100vh;
+
+    background: var(--background);
+
+    color: var(--text);
+
+    font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 24px;
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard {
+    width: min(100%, 768px);
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.3fr)
+        minmax(280px, 1fr);
+
+    grid-template-rows:
+        auto
+        auto
+        auto;
+
+    gap: 16px;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 17px;
+
+    padding: 20px;
+
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+
+/* =========================
+   LÂMPADA
+========================= */
+
+.lamp-card {
+    grid-row: span 3;
+
+    min-height: 448px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* LÂMPADA LIGADA */
+
+.lamp-card.ligada {
+    border-color: var(--green);
+
+    box-shadow:
+        0 0 0 1px rgba(67, 184, 90, 0.12),
+        0 0 30px rgba(67, 184, 90, 0.08);
+}
+
+
+/* =========================
+   CABEÇALHO
+========================= */
+
+.card-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 15px;
+}
+
+
+.section-label {
+    display: block;
+
+    color: #bdbdbd;
+
+    font-size: 14px;
+
+    margin-bottom: 5px;
+}
+
+
+h1 {
+    font-size: 20px;
+
+    font-weight: 600;
+}
+
+
+/* =========================
+   CONEXÃO
+========================= */
+
+.connection {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #bdbdbd;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+
+    display: inline-block;
+
+    border-radius: 50%;
+
+    background: var(--green);
+}
+
+
+/* =========================
+   CONTEÚDO DA LÂMPADA
+========================= */
+
+.lamp-content {
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+}
+
+
+/* =========================
+   ÍCONE
+========================= */
+
+.lamp-icon {
+    width: 150px;
+
+    margin-bottom: 15px;
+
+    transition:
+        filter 0.3s ease,
+        opacity 0.3s ease;
+}
+
+
+.lamp-icon svg {
+    width: 100%;
+
+    fill: none;
+
+    stroke: #eeeeee;
+
+    stroke-width: 5;
+
+    stroke-linecap: round;
+
+    stroke-linejoin: round;
+}
+
+
+/* brilho quando ligada */
+
+.lamp-card.ligada .lamp-icon {
+    filter:
+        drop-shadow(0 0 12px rgba(67, 184, 90, 0.45))
+        drop-shadow(0 0 25px rgba(67, 184, 90, 0.18));
+}
+
+
+/* =========================
+   ESTADO
+========================= */
+
+.lamp-state h2 {
+    font-size: 24px;
+
+    margin-bottom: 4px;
+}
+
+
+.lamp-state p {
+    color: var(--muted);
+
+    font-size: 15px;
+}
+
+
+/* =========================
+   BOTÃO
+========================= */
+
+.control-button {
+    width: 100%;
+
+    margin-top: 25px;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background: var(--button);
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease;
+}
+
+
+.control-button:hover {
+    background: #303640;
+}
+
+
+.control-button:active {
+    transform: scale(0.98);
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.online-status {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 12px;
+
+    color: var(--green);
+
+    font-size: 14px;
+}
+
+
+.card p {
+    color: #bdbdbd;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    margin-top: 10px;
+}
+
+
+/* =========================
+   MÉTRICAS
+========================= */
+
+.metric {
+    font-size: 29px;
+
+    font-weight: 600;
+
+    margin-top: 10px;
+
+    color: #eeeeee;
+}
+
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media (max-width: 650px) {
+
+    body {
+        padding: 12px;
+    }
+
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .lamp-card {
+        grid-row: auto;
+    }
+
+    .card-header {
+        flex-direction: column;
+    }
+
+    .connection {
+        align-self: flex-start;
+    }
+
+}
