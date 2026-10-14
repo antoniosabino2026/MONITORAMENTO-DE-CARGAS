@@ -1,3 +1,9 @@
+/*Eu sou António Sabino, e este projecto é um Desenvolvimento de firmware 
+em C++ para o microcontrolador ESP32, destinado ao monitoramento e controlo 
+de uma carga elétrica (lâmpada), com integração de um servidor HTTP e uma 
+interface web para consulta do estado lógico da carga e execução de comandos 
+de acionamento, utilizando comunicação entre o sistema embarcado e a aplicação web.*/
+
 #include <IRremote.hpp>
 
 #include <WebServer.h>
