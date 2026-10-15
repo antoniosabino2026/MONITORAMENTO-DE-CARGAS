@@ -222,7 +222,7 @@ void setup() {
   server.begin();
   Serial.println("Servidor HTTP iniciado.");
 
-//INICIAR O SERVIDOR/PROTOCOLO WEBSOCKET
+//INICIAR O SERVIDOR/PROTOCOLO WEBSOCKET Vai dar certo, é até dar certo
   webSocket.begin();
   webSocket.onEvent(eventoWebSocket);
   Serial.println("Servidor webSocket iniciado com sucesso");
