@@ -1,3 +1,21 @@
+#include <SocketIOclient.h>
+#include <WebSockets.h>
+#include <WebSockets4WebServer.h>
+#include <WebSocketsClient.h>
+#include <WebSocketsNetworkClient.h>
+#include <WebSocketsNetworkClientSecure.h>
+#include <WebSocketsServer.h>
+#include <WebSocketsVersion.h>
+
+#include <SocketIOclient.h>
+#include <WebSockets.h>
+#include <WebSockets4WebServer.h>
+#include <WebSocketsClient.h>
+#include <WebSocketsNetworkClient.h>
+#include <WebSocketsNetworkClientSecure.h>
+#include <WebSocketsServer.h>
+#include <WebSocketsVersion.h>
+
 /*Eu sou António Sabino, e este projecto é um Desenvolvimento de firmware 
 em C++ para o microcontrolador ESP32, destinado ao monitoramento e controlo 
 de uma carga elétrica (lâmpada), com integração de um servidor HTTP e uma 
@@ -27,6 +45,7 @@ const char* pass = "12345678_";
 
 bool lampState = false;
 WebServer server(80);
+WebSocketsServer webSocket(81);
 
 int c = 0;
 void LigarLampada(){
@@ -34,6 +53,36 @@ void LigarLampada(){
 }
 void DesligarLampada(){
   digitalWrite(lampada, LOW);
+}
+
+String obterDadosJSON(){
+  String json = "{";
+  json += "\"lampState\":";
+  json += lampState ? "true" : "false";
+  
+  json += ",\"uptime\":";
+  json += millis();
+
+  json += "}";
+  return json;
+
+}
+
+void enviarDadosTodos{
+  websocket.broadcastTXT(obterEstadoJSON());
+}
+
+void eventoWebSocket(
+  uint8_t numero,
+  WStype_t tipo,
+  uint8_t * payload,
+  size_t comprimento
+){
+  if (tipo == WStype_CONNECTED){
+    WebSocket.sendTXT(
+      numero, obterEstadoJSON()
+    );
+  }
 }
   
 
@@ -173,6 +222,11 @@ void setup() {
   server.begin();
   Serial.println("Servidor HTTP iniciado.");
 
+//INICIAR O SERVIDOR/PROTOCOLO WEBSOCKET
+  webSocket.begin();
+  webSocket.onEvent(eventoWebSocket);
+  Serial.println("Servidor webSocket iniciado com sucesso");
+
   Serial.println();
   Serial.println("=====================================");
   Serial.println("=========Aguardando Comandos=========");
@@ -185,7 +239,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   server.handleClient();
-
+  webSocket.loop();
   //VERIFICAR E ATUALIZAR EM PRIMEIRA MÃO O JAVASCRIPT
   if (IrReceiver.decode()){
     if(IrReceiver.decodedIRData.protocol == NEC &&
