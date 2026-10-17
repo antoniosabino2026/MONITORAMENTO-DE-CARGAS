@@ -1,163 +1,117 @@
+
 const lampCard = document.getElementById("lampCard");
-
 const lampButton = document.getElementById("lampButton");
-
 const lampState = document.getElementById("lampState");
+const lampDescription = document.getElementById("lampDescription");
+const timer = document.getElementById("timer");
 
-const lampDescription =
-    document.getElementById("lampDescription");
-
-const timer =
-    document.getElementById("timer");
-
-// Estado inicial
+// O estado visual será atualizado a partir do ESP32.
 let lampadaLigada = false;
-
-async function obterEstadoEsp() {
-    const resposta = await fetch("/api/state");
-    const dados = await resposta.json();
-    console.log(dados);
-    let estado = dados.lampState;
-   
-    if (estado === true){
-        
-        console.log("Está ON", estado);
-        lampCard.classList.add("ligada");
-
-        lampState.textContent = "LIGADA";
-
-        lampDescription.textContent =
-            "A lâmpada está ligada";
-
-        lampButton.textContent =
-            "Desligar lâmpada";
-        lampadaLigada = lampadaLigada;
-        LigarEsp();
-    }
-    else{
-        lampCard.classList.remove("ligada");
-
-        lampState.textContent = "DESLIGADA";
-
-        lampDescription.textContent =
-            "A lâmpada está desligada";
-
-        lampButton.textContent =
-            "Ligar lâmpada";
-            lampadaLigada = !lampadaLigada;
-        DesligarEsp();
-        console.log("Está OFF", estado);
-    }
-    return estado;
-}
-//console.log("HELLO WORLD", obterEstadoEsp());
-/*const estado =  obterEstadoEsp().lampState;
-    if (estado == true){
-        inverterEstado();
-        atualizarInterface();
-    console.log("Funcionando");
-    }
-
-
-async function estadoEsp(){
-    let lampadaLigada = await obterEstadoEsp();
-    console.log(lampadaLigada);
-    
-    return lampadaLigada;
-}*/
-
-
-// Tempo em segundos
 let tempoLigada = 0;
 
+let socket;
+let reconexaoAgendada = false;
 
-// =========================
-// ATUALIZAR INTERFACE
-// =========================
+// ====================================
+// ATUALIZAR INTERFACE COM DADOS DO ESP32
+// ====================================
 
-function atualizarInterface() {
-
+function atualizarDashboard(dados) {
+    lampadaLigada = dados.lampState;
 
     if (lampadaLigada) {
-
         lampCard.classList.add("ligada");
-
         lampState.textContent = "LIGADA";
-
-        lampDescription.textContent =
-            "A lâmpada está ligada";
-
-        lampButton.textContent =
-            "Desligar lâmpada";
-
+        lampDescription.textContent = "A lâmpada está ligada";
+        lampButton.textContent = "Desligar lâmpada";
     } else {
-
         lampCard.classList.remove("ligada");
-
         lampState.textContent = "DESLIGADA";
+        lampDescription.textContent = "A lâmpada está desligada";
+        lampButton.textContent = "Ligar lâmpada";
+    }
 
-        lampDescription.textContent =
-            "A lâmpada está desligada";
+    console.log("Estado recebido do ESP32:", dados);
+}
 
-        lampButton.textContent =
-            "Ligar lâmpada";
+// ====================================
+// LIGAÇÃO WEBSOCKET
+// ====================================
+
+function conectarWebSocket() {
+    socket = new WebSocket(`ws://${location.hostname}:81/`);
+
+    socket.onopen = function () {
+        console.log("WebSocket conectado ao ESP32.");
+        reconexaoAgendada = false;
+    };
+
+    socket.onmessage = function (evento) {
+        try {
+            const dados = JSON.parse(evento.data);
+            atualizarDashboard(dados);
+        } catch (erro) {
+            console.error("Erro ao interpretar JSON:", erro);
+        }
+    };
+
+    socket.onerror = function (erro) {
+        console.error("Erro na ligação WebSocket:", erro);
+    };
+
+    socket.onclose = function () {
+        console.log("WebSocket desconectado.");
+
+        if (!reconexaoAgendada) {
+            reconexaoAgendada = true;
+
+            setTimeout(function () {
+                reconexaoAgendada = false;
+                conectarWebSocket();
+            }, 2000);
+        }
+    };
+}
+
+// ====================================
+// ENVIAR COMANDO AO ESP32
+// ====================================
+
+async function enviarComando(acao) {
+    try {
+        const resposta = await fetch(`/api/lamp/${acao}`);
+
+        if (!resposta.ok) {
+            throw new Error(`HTTP ${resposta.status}`);
+        }
+
+        const dados = await resposta.json();
+
+        console.log("Resposta HTTP do ESP32:", dados);
+
+        // A interface será atualizada pela mensagem WebSocket.
+    } catch (erro) {
+        console.error("Falha ao enviar comando:", erro);
     }
 }
 
-function inverterEstado(){
-    lampadaLigada = !lampadaLigada;
-}
-
-// =========================
-// BOTÃO
-// =========================
-/*lampButton.addEventListener("click", () => {
-
-    lampadaLigada = !lampadaLigada;
-
-    atualizarInterface();
-
-});*/
-lampButton.addEventListener("click", () => {
-
-    inverterEstado();
-
-    if (lampState.textContent == "LIGADA") {
-        DesligarEsp();
-        atualizarInterface();
-    }
-    else if (lampState.textContent == "DESLIGADA") {
-        LigarEsp();
-        atualizarInterface();
-    }
-    else {
-        console.log("Erro ao obter o estado da lâmpada");
-    }
-
+lampButton.addEventListener("click", function () {
+    const acao = lampadaLigada ? "off" : "on";
+    enviarComando(acao);
 });
 
-
-// =========================
+// ====================================
 // CRONÓMETRO
-// =========================
+// ====================================
 
 function atualizarTimer() {
-
     if (lampadaLigada) {
-
         tempoLigada++;
-
     }
 
-    const horas =
-        Math.floor(tempoLigada / 3600);
-
-    const minutos =
-        Math.floor((tempoLigada % 3600) / 60);
-
-    const segundos =
-        tempoLigada % 60;
-
+    const horas = Math.floor(tempoLigada / 3600);
+    const minutos = Math.floor((tempoLigada % 3600) / 60);
+    const segundos = tempoLigada % 60;
 
     timer.textContent =
         `${String(horas).padStart(2, "0")}:` +
@@ -165,29 +119,6 @@ function atualizarTimer() {
         `${String(segundos).padStart(2, "0")}`;
 }
 
-async function LigarEsp() {
-    const resposta = await fetch("/api/lamp/on");
-    const dados = await resposta.json();
-
-    console.log("O estado da lâmpada ligada é: ", dados.lampState);
-
-
-}
-async function DesligarEsp() {
-    const resposta = await fetch("/api/lamp/off");
-    const dados = await resposta.json();
-
-    console.log("O estado da lâmpada desligada é: ", dados.lampState);
-
-}
-setInterval(obterEstadoEsp, 1500);
-
-
-// Atualiza a cada segundo
-
+// Iniciar as funcionalidades.
+conectarWebSocket();
 setInterval(atualizarTimer, 1000);
-
-//setInterval(estadoEsp, 1000);
-// Estado inicial
-
-atualizarInterface();
