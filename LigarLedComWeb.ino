@@ -1,20 +1,5 @@
-#include <SocketIOclient.h>
-#include <WebSockets.h>
-#include <WebSockets4WebServer.h>
-#include <WebSocketsClient.h>
-#include <WebSocketsNetworkClient.h>
-#include <WebSocketsNetworkClientSecure.h>
-#include <WebSocketsServer.h>
-#include <WebSocketsVersion.h>
 
-#include <SocketIOclient.h>
-#include <WebSockets.h>
-#include <WebSockets4WebServer.h>
-#include <WebSocketsClient.h>
-#include <WebSocketsNetworkClient.h>
-#include <WebSocketsNetworkClientSecure.h>
-#include <WebSocketsServer.h>
-#include <WebSocketsVersion.h>
+
 
 /*Eu sou António Sabino, e este projecto é um Desenvolvimento de firmware 
 em C++ para o microcontrolador ESP32, destinado ao monitoramento e controlo 
@@ -23,7 +8,7 @@ interface web para consulta do estado lógico da carga e execução de comandos
 de acionamento, utilizando comunicação entre o sistema embarcado e a aplicação web.*/
 
 #include <IRremote.hpp>
-
+#include <WebSocketsServer.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <LittleFS.h>
@@ -50,9 +35,20 @@ WebSocketsServer webSocket(81);
 int c = 0;
 void LigarLampada(){
   digitalWrite(lampada, HIGH);
+
+  uint8_t estado = digitalRead(lampada);
+
+  Serial.print("A lâmpada está ON: ");
+  Serial.println(estado);
+
 }
 void DesligarLampada(){
   digitalWrite(lampada, LOW);
+
+  uint8_t estado = digitalRead(lampada);
+
+  Serial.print("A lâmpada está OFF: ");
+  Serial.println(estado);
 }
 
 String obterDadosJSON(){
@@ -61,15 +57,17 @@ String obterDadosJSON(){
   json += lampState ? "true" : "false";
   
   json += ",\"uptime\":";
-  json += millis();
+  json += String(millis());
 
   json += "}";
   return json;
 
 }
 
-void enviarDadosTodos{
-  websocket.broadcastTXT(obterEstadoJSON());
+// Função para enviar os dados JSON para todos os clientes conectados via WebSocket
+void enviarDadosTodos(){
+  String dados = obterDadosJSON();
+  webSocket.broadcastTXT(dados);
 }
 
 void eventoWebSocket(
@@ -79,8 +77,10 @@ void eventoWebSocket(
   size_t comprimento
 ){
   if (tipo == WStype_CONNECTED){
-    WebSocket.sendTXT(
-      numero, obterEstadoJSON()
+    String dados = obterDadosJSON();
+    webSocket.sendTXT(
+      
+      numero, dados
     );
   }
 }
@@ -175,23 +175,13 @@ void setup() {
   });
 
     server.on("/api/state", HTTP_GET, [](){
-      String json = "{";
-      json += "\"lampState\":";
-      json += lampState ? "true":"false";
-      json += ",";
-      json += "\"uptime\":";
-      json += millis();
-      json += "}";
 
-      server.send(200, "application/json", json);
+      server.send(200, "application/json", obterDadosJSON());
 
     });
-    server.on("/api/lamp/off", HTTP_GET, [](){
-      String json = "{";
-      json += "\"lampState\":";
-      json += lampState = false;
-      json += "}";
 
+    server.on("/api/lamp/off", HTTP_GET, [](){
+      lampState = false;
       DesligarLampada();
       
       int estado = digitalRead(lampada);
@@ -199,23 +189,23 @@ void setup() {
       Serial.print("A lâmpada está OFF: ");
       Serial.println(estado);
 
-      server.send(200, "application/json", json);
+      server.send(200, "application/json", obterDadosJSON());
+
+      enviarDadosTodos();
     });
 
     server.on("/api/lamp/on", HTTP_GET, [](){
-      String json = "{";
-      json += "\"lampState\":";
-      json += lampState = true;
-      json += "}";
-
+      lampState = true;
       LigarLampada();
 
-      int estado = digitalRead(lampada);
+      uint8_t estado = digitalRead(lampada);
 
       Serial.print("A lâmpada está ON: ");
       Serial.println(estado);
 
-      server.send(200, "application/json", json);
+      server.send(200, "application/json", obterDadosJSON());
+
+      enviarDadosTodos();
     });
   
 
@@ -252,6 +242,7 @@ void loop() {
       }else{
         DesligarLampada();
       }
+      enviarDadosTodos();
     }
     delay(1000);
     IrReceiver.resume();
