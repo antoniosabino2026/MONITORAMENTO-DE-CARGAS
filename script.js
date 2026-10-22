@@ -1,4 +1,4 @@
-
+//ANTÓNIO SABINO - CEO DA BEENOUS
 const lampCard = document.getElementById("lampCard");
 const lampButton = document.getElementById("lampButton");
 const lampState = document.getElementById("lampState");
