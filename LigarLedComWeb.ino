@@ -19,12 +19,14 @@ de acionamento, utilizando comunicação entre o sistema embarcado e a aplicaç�
 
 
 //const char* rede = "iPhone 8Plus d’António Sabino";
-const char* rede = "d3ma";
+//const char* rede = "d3ma";
+const char* rede = "BEENOUS-NETWORK";
 //const char* rede = "Meturiana";
 //const char* rede = "Shadownigth Comercial SNC";
 
 //const char* pass = "podeconectar_";
-const char* pass = "12345678_";
+//const char* pass = "12345678_";
+const char* pass = "BEENOUS-PASS";
 //const char* pass = "podeconectar_";
 //const char* pass = "00000000";
 
