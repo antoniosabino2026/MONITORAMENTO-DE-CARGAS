@@ -4,32 +4,43 @@ const lampButton = document.getElementById("lampButton");
 const lampState = document.getElementById("lampState");
 const lampDescription = document.getElementById("lampDescription");
 const timer = document.getElementById("timer");
-
+const tensao = document.getElementById("tensao");
 // O estado visual será atualizado a partir do ESP32.
 let lampadaLigada = false;
 let tempoLigada = 0;
-
+let volt = 0.0;
 let socket;
 let reconexaoAgendada = false;
 
 // ====================================
 // ATUALIZAR INTERFACE COM DADOS DO ESP32
 // ====================================
-
+/*"async function atualizarTensao() {
+    const resposta = await fetch("/api/state");
+    const date = await resposta.json;
+    tensao.textContent = date.Tensao, "V";
+    console.log(date.Tensao);
+}"
+*/
 function atualizarDashboard(dados) {
     lampadaLigada = dados.lampState;
-
-    if (lampadaLigada) {
-        lampCard.classList.add("ligada");
-        lampState.textContent = "LIGADA";
-        lampDescription.textContent = "A lâmpada está ligada";
-        lampButton.textContent = "Desligar lâmpada";
-    } else {
-        lampCard.classList.remove("ligada");
-        lampState.textContent = "DESLIGADA";
-        lampDescription.textContent = "A lâmpada está desligada";
-        lampButton.textContent = "Ligar lâmpada";
-    }
+    volt = dados.Tensao;
+    if (volt < 50.0 || volt > 230.0){
+        volt = 0.0
+    } 
+        if (lampadaLigada) {
+            lampCard.classList.add("ligada");
+            lampState.textContent = "LIGADA";
+            lampDescription.textContent = "A lâmpada está ligada";
+            lampButton.textContent = "Desligar lâmpada";
+            tensao.textContent = volt + "V";
+        } else {
+            lampCard.classList.remove("ligada");
+            lampState.textContent = "DESLIGADA";
+            lampDescription.textContent = "A lâmpada está desligada";
+            lampButton.textContent = "Ligar lâmpada";
+            tensao.textContent = volt + "V";
+        }
 
     console.log("Estado recebido do ESP32:", dados);
 }
